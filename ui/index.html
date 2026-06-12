@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TradeQuest PC Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen p-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <header class="border-b border-gray-700 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold text-indigo-400 tracking-wider">⚔️ TRADEQUEST PC</h1>
+            <div id="characterStatus" class="text-sm font-semibold bg-gray-800 px-4 py-2 rounded border border-gray-700 text-yellow-400">
+                Status: Awaiting Character Creation
+            </div>
+        </header>
+
+        <section id="authSection" class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl max-w-4xl mx-auto">
+            <h2 class="text-xl font-bold mb-4 text-indigo-300">Awaken Your Trader Profile</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input id="usernameInput" type="text" placeholder="Character Name" class="bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 flex-1 focus:outline-none focus:border-indigo-500">
+                <input id="emailInput" type="email" placeholder="trader@quest.com" class="bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 flex-1 focus:outline-none focus:border-indigo-500">
+                <button onclick="initTrader()" class="bg-indigo-600 hover:bg-indigo-500 font-bold px-6 py-2 rounded transition shadow-lg">Spawn Trader</button>
+            </div>
+        </section>
+
+        <section id="coachWidgetSection" class="bg-slate-950 border border-indigo-500/40 p-5 rounded-lg shadow-2xl hidden flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div class="bg-indigo-900/50 p-3 rounded-full text-2xl border border-indigo-400/30 flex-shrink-0">🧙‍♂️</div>
+            <div class="space-y-1 flex-1">
+                <div class="flex items-center gap-2">
+                    <h3 id="coachIdentity" class="font-black text-indigo-400 tracking-wide text-sm uppercase">Jesse</h3>
+                    <span id="coachArchetype" class="text-[10px] bg-indigo-950 border border-indigo-800 text-indigo-300 px-1.5 py-0.5 rounded uppercase font-mono">Tactician</span>
+                </div>
+                <p id="coachEvalText" class="text-sm text-gray-300 italic">"Analyzing your performance telemetry data..."</p>
+                <p class="text-xs text-indigo-300/90 font-semibold">🎯 Focus Quest: <span id="coachAdviceText" class="text-gray-400 font-normal">Loading mission protocols...</span></p>
+            </div>
+        </section>
+
+        <main id="gameLoopGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+            
+            <section class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl space-y-6">
+                <div class="border-b border-gray-700 pb-2 flex justify-between items-end">
+                    <h2 class="text-xl font-bold text-yellow-400">📜 Character Sheet</h2>
+                    <span id="sheetCharName" class="text-sm font-bold text-indigo-300 tracking-wide uppercase">---</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase tracking-wider">Rank Title</p>
+                        <p id="charTitleDisplay" class="text-sm font-black text-indigo-400 truncate">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase tracking-wider">Current Zone</p>
+                        <p id="charTitle" class="text-sm font-bold text-white truncate">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase tracking-wider">Total Profit</p>
+                        <p id="charTotalProfit" class="text-sm font-bold text-emerald-400">$0.00</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-bold mb-1">
+                        <span>Level <span id="charLevel">1</span> Progress</span>
+                        <span id="profitRatioLabel" class="text-gray-400">$0.00 / $50.00</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden relative">
+                        <div id="xpBar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">RPG Core Attributes</p>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-gray-700/50 p-2 rounded">🛡️ Discipline: <span id="statDiscipline" class="font-bold text-white">50</span></div>
+                        <div class="bg-gray-700/50 p-2 rounded">⏳ Patience: <span id="statPatience" class="font-bold text-white">50</span></div>
+                        <div class="bg-gray-700/50 p-2 rounded">⚖️ Risk Mgt: <span id="statRisk" class="font-bold text-white">50</span></div>
+                        <div class="bg-gray-700/50 p-2 rounded">🎯 Consistency: <span id="statConsistency" class="font-bold text-white">50</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-gradient-to-b from-slate-900 to-gray-800 p-6 rounded-lg border-2 border-red-900/60 shadow-xl flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="border-b border-red-900/40 pb-2 flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-red-500 tracking-wide">👹 BOSS ENCOUNTER</h2>
+                        <span id="bossLotRequirement" class="text-xs font-mono bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">0.01 Lots Only</span>
+                    </div>
+                    <div class="text-center my-6 space-y-2">
+                        <p id="activeBossName" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500 tracking-widest uppercase">BOSS NAME</p>
+                        <p id="activeBossDesc" class="text-xs text-gray-400 italic px-4">Boss description goes here...</p>
+                    </div>
+                </div>
+                <div class="bg-black/40 p-4 rounded border border-gray-700 text-center space-y-1">
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Damage Required to Defeat</p>
+                    <p id="bossDamageLeft" class="text-xl font-mono font-bold text-orange-400">$50.00 Remaining</p>
+                </div>
+            </section>
+
+            <section class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl space-y-4">
+                <h2 class="text-xl font-bold text-green-400 border-b border-gray-700 pb-2">⚔️ Log Account Trade</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Asset Instrument</label>
+                        <input id="tradeAsset" type="text" value="XAUUSD" class="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Lot Size Utilized</label>
+                        <input id="tradeLots" type="number" step="0.01" value="0.01" class="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Profit / Loss ($ USD)</label>
+                        <input id="tradePnl" type="number" step="0.01" value="20.00" class="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-green-500">
+                    </div>
+                    <button onclick="submitTrade()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition shadow-lg">Log Execution to Database</button>
+                    <p id="logFeedback" class="text-center text-sm font-semibold h-4"></p>
+                </div>
+            </section>
+        </main>
+
+        <section id="questMapSection" class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl hidden space-y-4">
+            <h2 class="text-lg font-bold text-indigo-300 border-b border-gray-700 pb-2">🗺️ TradeQuest Campaign Progress Map</h2>
+            <div id="conqueredLevelsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4"></div>
+        </section>
+
+        <section id="sideQuestsSection" class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl hidden space-y-4">
+            <h2 class="text-lg font-bold text-amber-400 border-b border-gray-700 pb-2">🎯 Active Side Quests & Bounties</h2>
+            <div id="questsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <section id="historySection" class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl hidden space-y-4">
+            <h2 class="text-lg font-bold text-emerald-400 border-b border-gray-700 pb-2">📜 Quest Log (Trade History)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400 uppercase font-semibold text-xs tracking-wider">
+                            <th class="py-3 px-4">Timestamp</th>
+                            <th class="py-3 px-4">Instrument</th>
+                            <th class="py-3 px-4">Lot Size</th>
+                            <th class="py-3 px-4 text-right">Resulting PnL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeHistoryBody" class="divide-y divide-gray-700/50 font-mono"></tbody>
+                </table>
+                <p id="emptyLogMessage" class="text-center text-gray-500 py-6 text-sm italic hidden">No quests logged yet.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let currentUserId = null;
+
+        const CAMPAIGN_MAP = {
+            1: { name: "Apprentice Valley", boss: "FOMO Goblin", desc: "Strikes hard when you try to chase running green candles." },
+            2: { name: "Trader Mountain", boss: "Drawdown Beast", desc: "Feeds on your panic when your trading positions float negative." },
+            3: { name: "Consistency Canyon", boss: "Revenge Trading Hydra", desc: "Spawns two more losing trades every single time you try to 'win back' a loss." },
+            4: { name: "Professional City", boss: "The Over-Leverage Titan", desc: "Instantly crushes accounts that trade positions that are way too big." },
+            5: { name: "Fund Manager Citadel", boss: "The Market Maker Dragon", desc: "The ultimate boss. Tests your absolute patience and psychological mastery." }
+        };
+
+        function getCampaignData(level) {
+            if (CAMPAIGN_MAP[level]) return CAMPAIGN_MAP[level];
+            return {
+                name: `Elite Domain Tier ${level}`,
+                boss: `Whale Algorithm MK-${level}`,
+                desc: "An advanced automated HFT monster testing high-tier capital scaling systems."
+            };
+        }
+
+        async function initTrader() {
+            const username = document.getElementById('usernameInput').value;
+            const email = document.getElementById('emailInput').value;
+            if(!username || !email) return alert("Please fill out Name and Email credentials!");
+
+            try {
+                const response = await fetch('/users/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, email })
+                });
+                
+                const data = await response.json();
+                if(!response.ok) throw new Error(data.detail || "Failed initialization");
+                
+                currentUserId = data.id;
+                updateUICharacterSheet(data);
+                
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('coachWidgetSection').classList.remove('hidden');
+                document.getElementById('gameLoopGrid').classList.remove('hidden');
+                document.getElementById('questMapSection').classList.remove('hidden');
+                document.getElementById('sideQuestsSection').classList.remove('hidden');
+                document.getElementById('historySection').classList.remove('hidden');
+                document.getElementById('characterStatus').innerText = `Active Trader: ${data.username}`;
+                
+                fetchTradeHistory();
+                fetchCoachReview();
+                fetchSideQuests();
+            } catch (err) {
+                alert("🔴 Spawning Failure: " + err.message);
+            }
+        }
+
+        async function submitTrade() {
+            if(!currentUserId) return;
+            const feedback = document.getElementById('logFeedback');
+            feedback.innerText = "";
+
+            const instrument = document.getElementById('tradeAsset').value;
+            const lot_size = parseFloat(document.getElementById('tradeLots').value);
+            const pnl = parseFloat(document.getElementById('tradePnl').value);
+
+            try {
+                const response = await fetch(`/trades/?user_id=${currentUserId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ instrument, lot_size, pnl })
+                });
+
+                const data = await response.json();
+                if(!response.ok) {
+                    feedback.className = "text-center text-sm font-semibold text-red-400";
+                    feedback.innerText = `❌ ${data.detail}`;
+                    return;
+                }
+
+                feedback.className = "text-center text-sm font-semibold text-emerald-400";
+                feedback.innerText = "💥 Trade recorded successfully.";
+                
+                fetchUpdatedProfile();
+                fetchTradeHistory();
+                fetchCoachReview();
+                fetchSideQuests();
+            } catch (err) {
+                feedback.innerText = "Server communication failure.";
+            }
+        }
+
+        async function fetchUpdatedProfile() {
+            try {
+                const response = await fetch(`/users/${currentUserId}`);
+                const data = await response.json();
+                if(response.ok) updateUICharacterSheet(data);
+            } catch (err) {
+                console.error("Error sync:", err);
+            }
+        }
+
+        async function fetchCoachReview() {
+            if(!currentUserId) return;
+            try {
+                const response = await fetch(`/users/${currentUserId}/coach-review`);
+                const data = await response.json();
+                if(!response.ok) return;
+
+                document.getElementById('coachIdentity').innerText = data.coach_name;
+                document.getElementById('coachArchetype').innerText = data.archetype;
+                document.getElementById('coachEvalText').innerText = `"${data.evaluation}"`;
+                document.getElementById('coachAdviceText').innerText = data.advice;
+            } catch (err) {
+                console.error("Coach retrieval fault:", err);
+            }
+        }
+
+        function fetchSideQuests() {
+            if(!currentUserId) return;
+            fetch(`/users/${currentUserId}/side-quests`)
+                .then(response => response.json())
+                .then(quests => {
+                    const container = document.getElementById('questsContainer');
+                    container.innerHTML = "";
+
+                    quests.forEach(q => {
+                        const block = document.createElement('div');
+                        const isDone = q.status === "COMPLETED";
+                        
+                        block.className = isDone 
+                            ? "bg-emerald-950/30 border border-emerald-500/50 p-4 rounded-lg relative flex flex-col justify-between space-y-2 shadow-inner" 
+                            : "bg-gray-800/80 border border-gray-700 p-4 rounded-lg relative flex flex-col justify-between space-y-2 shadow-md";
+                        
+                        const badgeClass = isDone 
+                            ? "bg-emerald-900 border border-emerald-500 text-emerald-300" 
+                            : "bg-amber-950 border border-amber-800 text-amber-400";
+
+                        const formattedRewardStat = q.reward_stat.replace('_', ' ');
+
+                        block.innerHTML = `
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-start gap-2">
+                                    <h4 class="font-bold text-sm text-gray-100 truncate">${q.title}</h4>
+                                    <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${badgeClass}">${q.status}</span>
+                                </div>
+                                <p class="text-xs text-gray-400 leading-snug">${q.requirement}</p>
+                            </div>
+                            <div class="border-t border-gray-700/50 pt-2 flex justify-between items-center text-[10px]">
+                                <span class="text-gray-400">Prog: <span class="font-mono text-white font-bold">${q.current_value} / ${q.target_value}</span></span>
+                                <span class="text-indigo-400 font-semibold font-mono">+${q.reward_amount} ${formattedRewardStat}</span>
+                            </div>
+                        `;
+                        container.appendChild(block);
+                    });
+                })
+                .catch(err => console.error("Error fetching quest tracking list:", err));
+        }
+
+        async function fetchTradeHistory() {
+            if(!currentUserId) return;
+            try {
+                const response = await fetch(`/users/${currentUserId}/trades`);
+                const trades = await response.json();
+                if(!response.ok) return;
+
+                const tbody = document.getElementById('tradeHistoryBody');
+                const emptyMsg = document.getElementById('emptyLogMessage');
+                tbody.innerHTML = "";
+
+                if(trades.length === 0) {
+                    emptyMsg.classList.remove('hidden');
+                    return;
+                }
+                emptyMsg.classList.add('hidden');
+
+                trades.forEach(trade => {
+                    const row = document.createElement('tr');
+                    row.className = "border-b border-gray-800 hover:bg-gray-800/30 transition-colors";
+                    const dateStr = new Date(trade.created_at).toLocaleString();
+                    const isWin = trade.pnl >= 0;
+                    const pnlText = (isWin ? "+$" : "-$") + Math.abs(trade.pnl).toFixed(2);
+                    const pnlClass = isWin ? "text-emerald-400 text-right font-bold" : "text-rose-500 text-right font-bold";
+
+                    row.innerHTML = `
+                        <td class="py-3 px-4 text-gray-400 text-xs">${dateStr}</td>
+                        <td class="py-3 px-4 font-bold text-gray-200">${trade.instrument}</td>
+                        <td class="py-3 px-4 text-gray-300">${trade.lot_size.toFixed(2)}</td>
+                        <td class="py-3 px-4 ${pnlClass}">${pnlText}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Failed fetching trade timeline logs:", err);
+            }
+        }
+
+        function updateUICharacterSheet(user) {
+            const targetNeeded = user.level * 50.0;
+            const currentZone = getCampaignData(user.level);
+            
+            document.getElementById('sheetCharName').innerText = user.username;
+            document.getElementById('charTitleDisplay').innerText = user.current_title;
+            document.getElementById('charTitle').innerText = currentZone.name;
+            document.getElementById('bossLotRequirement').innerText = `${user.allowed_lot_size.toFixed(2)} Max Lots`;
+            document.getElementById('charLevel').innerText = user.level;
+            
+            const totalProfitEl = document.getElementById('charTotalProfit');
+            totalProfitEl.innerText = (user.total_profit >= 0 ? "$" : "-$") + Math.abs(user.total_profit).toFixed(2);
+            totalProfitEl.className = user.total_profit < 0 ? "text-sm font-bold text-rose-500" : "text-sm font-bold text-emerald-400";
+
+            const formattedProfit = (user.level_profit >= 0 ? "$" : "-$") + Math.abs(user.level_profit).toFixed(2);
+            document.getElementById('profitRatioLabel').innerText = `${formattedProfit} / $${targetNeeded.toFixed(2)}`;
+            
+            document.getElementById('activeBossName').innerText = currentZone.boss;
+            document.getElementById('activeBossDesc').innerText = currentZone.desc;
+            
+            const damageRemaining = Math.max(targetNeeded - user.level_profit, 0);
+            document.getElementById('bossDamageLeft').innerText = `$${damageRemaining.toFixed(2)} Target PnL`;
+
+            document.getElementById('statDiscipline').innerText = user.discipline;
+            document.getElementById('statPatience').innerText = user.patience;
+            document.getElementById('statRisk').innerText = user.risk_management;
+            document.getElementById('statConsistency').innerText = user.consistency;
+            
+            const xpBar = document.getElementById('xpBar');
+            let percentage = (user.level_profit / targetNeeded) * 100;
+            if (user.level_profit < 0) {
+                percentage = Math.abs(percentage);
+                xpBar.className = "bg-rose-600 h-full transition-all duration-500"; 
+            } else {
+                xpBar.className = "bg-emerald-500 h-full transition-all duration-500"; 
+            }
+            xpBar.style.width = `${Math.min(Math.max(percentage, 0), 100)}%`;
+
+            renderCampaignMap(user.level);
+        }
+
+        function renderCampaignMap(currentLevel) {
+            const mapContainer = document.getElementById('conqueredLevelsContainer');
+            mapContainer.innerHTML = ""; 
+
+            const totalVisibleSlots = Math.max(5, currentLevel);
+
+            for (let i = 1; i <= totalVisibleSlots; i++) {
+                const zone = getCampaignData(i);
+                const block = document.createElement('div');
+                
+                if (i < currentLevel) {
+                    block.className = "bg-emerald-950/40 border border-emerald-500 p-3 rounded text-center relative overflow-hidden opacity-60";
+                    block.innerHTML = `
+                        <div class="absolute top-1 right-1 text-xs text-emerald-400 font-bold">✔️ CLEAR</div>
+                        <p class="text-xs text-gray-400 font-bold">LVL ${i}</p>
+                        <p class="text-sm font-black text-emerald-300 truncate">${zone.name}</p>
+                        <p class="text-[10px] text-gray-500 italic line-through">Defeated: ${zone.boss}</p>
+                    `;
+                } else if (i === currentLevel) {
+                    block.className = "bg-slate-800 border-2 border-indigo-500 p-3 rounded text-center relative shadow-md shadow-indigo-500/20";
+                    block.innerHTML = `
+                        <div class="absolute top-1 right-1 text-[10px] bg-indigo-900 text-indigo-300 px-1 rounded font-bold animate-pulse">ACTIVE</div>
+                        <p class="text-xs text-indigo-400 font-bold">LVL ${i}</p>
+                        <p class="text-sm font-black text-white truncate">${zone.name}</p>
+                        <p class="text-[10px] text-orange-400 font-bold">Fighting: ${zone.boss}</p>
+                    `;
+                } else {
+                    block.className = "bg-gray-800/20 border border-gray-700/50 p-3 rounded text-center opacity-30 select-none";
+                    block.innerHTML = `
+                        <p class="text-xs text-gray-600 font-bold">LVL ${i}</p>
+                        <p class="text-sm font-bold text-gray-500 truncate">🔒 Locked Zone</p>
+                        <p class="text-[10px] text-gray-600">Boss: ???</p>
+                    `;
+                }
+                mapContainer.appendChild(block);
+            }
+        }
+    </script>
+</body>
+</html>
